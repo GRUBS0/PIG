@@ -9,16 +9,18 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        ZStack {
+            Color.gray.opacity(0.7).ignoresSafeArea()
+            VStack {
+                Image("Pig").resizable().frame(width:150, height:150)
+                Text("Pig")
+                Spacer()
+            }
         }
-        .padding()
     }
 }
 
 #Preview {
     ContentView()
 }
+
