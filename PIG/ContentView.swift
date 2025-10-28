@@ -15,13 +15,9 @@ struct ContentView: View {
 
                 VStack {
 
-                    Image("Pig")
-                        .resizable()
-                        .frame(width: 150, height: 150)
+                    Image("Pig").resizable().frame(width: 150, height: 150)
                     CustomText(text: "Pig Game")
-
-
-                    Image("pigs \(randomValue)")
+                    Image("pips \(randomValue)")
                         .resizable()
                         .frame(width: 150, height: 150)
                         .rotationEffect(.degrees(rotation))
