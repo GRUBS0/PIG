@@ -1,160 +1,132 @@
 import SwiftUI
 
 struct ContentView: View {
-
     @State private var turnScore = 0
     @State private var gameScore = 0
-    @State private var randomValue = 1
+    @State private var randomValue = 0
     @State private var rotation = 0.0
     @State private var gameOver = false
-
     var body: some View {
-        NavigationView {
-            ZStack {
+        NavigationView{
+            ZStack{
                 Color.gray.opacity(0.7).ignoresSafeArea()
-
                 VStack {
-
                     Image("Pig").resizable().frame(width: 150, height: 150)
-                    CustomText(text: "Pig Game")
+                    CustomText(text: "Pig")
                     Image("pips \(randomValue)")
                         .resizable()
                         .frame(width: 150, height: 150)
                         .rotationEffect(.degrees(rotation))
-                        .rotation3DEffect(.degrees(rotation), axis: (x: 1, y: 1, z: 0))
+                        .rotation3DEffect(.degrees(rotation), axis: ( x: 1, y: 1, z: 0))
                         .padding(50)
-
                     CustomText(text: "Turn Score: \(turnScore)")
+                    HStack{
+                        Button("Roll"){
+                            chooseRandom(times: 3)
+                            withAnimation(.interpolatingSpring(stiffness: 10, damping: 2)){
+                                rotation += 360
+                            }
+                        }
+                        
+                        .buttonStyle(CustomButtonStyle())
+                        Button("Hold"){
+                            gameScore += turnScore
+                            endTurn( )
+                            withAnimation(.easeInOut(duration: 1)){
+                                rotation += 360
+                            }
+                            if gameScore >= 100 {
+                                gameOver = true
+                            }
+                        }
+                        .buttonStyle(CustomButtonStyle())
+                    }
                     CustomText(text: "Game Score: \(gameScore)")
-
-
-                    HStack(spacing: 30) {
-                        Button("Roll") {
-                            rollDie()
-                        }
-                        .buttonStyle(CustomButtonStyle())
-
-                        Button("Hold") {
-                            holdTurn()
-                        }
-                        .buttonStyle(CustomButtonStyle())
-                    }
-                    .padding(.top)
-
-
-                    NavigationLink(destination: InstructionsView()) {
-                        Text("How to Play")
-                            .font(Font.custom("Marker Felt", size: 24))
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-
-
-                    Button("Reset Game") {
-                        resetGame()
+                    NavigationLink("How to Play", destination: InstructionsView())
+                        .font(Font.custom("Marker Felt", size: 24))
+                        .padding()
+                    
+                    Button("Reset"){
+                        endTurn()
+                        gameScore = 0
                     }
                     .font(Font.custom("Marker Felt", size: 24))
-                    .padding()
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-
-                    Spacer()
                 }
             }
-            .alert("🎉 You Win!", isPresented: $gameOver) {
-                Button("OK", role: .cancel) {
-                    resetGame()
-                }
-            } message: {
-                Text("Congratulations! You reached 100 points!")
-            }
+            Spacer()
+                .alert(isPresented: $gameOver, content: {
+                    Alert(title: Text("You won the game!"), dismissButton: .destructive(Text("Play again?"), action: { withAnimation {
+                        gameScore = 0
+                        gameOver = false
+                    }
+                    }))
+                })
         }
     }
-
-
     func endTurn() {
         turnScore = 0
+        randomValue = 0
     }
-
-    func rollDie() {
-        randomValue = Int.random(in: 1...6)
-        rotation += 360
-
-        if randomValue == 1 {
-            endTurn()
-        } else {
-
+    func chooseRandom(times: Int){
+        if times > 0{
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                randomValue = Int.random(in: 1...6)
+                chooseRandom(times: times - 1)
+            }
+        }
+        if times == 0{
+            if randomValue == 1{
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1){
+                    endTurn()
+                }
+            }
+        }
+        else {
             turnScore += randomValue
         }
     }
-
-    func holdTurn() {
-
-        gameScore += turnScore
-        turnScore = 0
-
-
-        if gameScore >= 100 {
-            gameOver = true
-        }
-    }
-
-    func resetGame() {
-        turnScore = 0
-        gameScore = 0
-        randomValue = 1
-        rotation = 0
-        gameOver = false
-    }
 }
-
-
-
-struct CustomText: View {
+struct CustomText: View{
     let text: String
-    var body: some View {
-        Text(text)
-            .font(Font.custom("Marker Felt", size: 36))
+    var body: some View{
+        Text(text).font(Font.custom("Marker Felt", size: 36))
     }
 }
-
 struct CustomButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .frame(width: 80)
+            .frame(width: 50)
             .font(Font.custom("Marker Felt", size: 24))
             .padding()
-            .background(Color.red.opacity(configuration.isPressed ? 0.5 : 1.0))
+            .background(.red).opacity(configuration.isPressed ? 0.0 : 1.0)
             .foregroundColor(.white)
             .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
-
-
-
 struct InstructionsView: View {
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 15) {
-                Text("How to Play Pig")
-                    .font(Font.custom("Marker Felt", size: 36))
-                    .padding(.bottom)
-
-                Text("On each turn, you can roll the die as many times as you want. Each roll adds the die value to your turn score, unless you roll a 1.")
-                Text("If you roll a 1, your turn ends immediately and you lose all points from that turn.")
-                Text("If you choose to hold, your turn score is added to your game score, and it becomes the next player's turn.")
-                Text("The first player to reach 100 points wins!")
+        ZStack {
+            Color.gray.opacity(0.7).frame(width: 150, height: 150)
+            VStack {
+                Image("Pig").resizable().frame(width: 150, height: 150)
+                CustomText(text: "Pig")
+                VStack(alignment: .leading) {
+                    Text("In the game of Pig, players take individual turns. Each turn, a player repeatedly rolls a single die until either a pig is rolled or the player decides to \"hold\".")
+                        .padding()
+                    Text("If a player rolls a pig, they score nothing and it is the next player's turn.")
+                        .padding ( )
+                    Text("If the player rolls any other number, it is added to their turn total, and the player's turn continues.")
+                        .padding()
+                    Text("If the player chooses to \"hold\", their turn total is added to the game score, and it becomes the next player's turn.")
+                        .padding ()
+                    Text("A player wins the game when the game score becomes 100 or more on their turn.")
+                        .padding ( )
+                }
+                Spacer()
             }
-            .font(Font.custom("Marker Felt", size: 20))
-            .padding()
         }
-        .navigationTitle("Instructions")
     }
 }
-
 
 #Preview {
     ContentView()
