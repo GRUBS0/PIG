@@ -80,11 +80,12 @@ struct ContentView: View {
                     endTurn()
                 }
             }
+            else {
+                turnScore += randomValue
+            }
+
         }
-        else {
-            turnScore += randomValue
-        }
-    }
+            }
 }
 struct CustomText: View{
     let text: String
